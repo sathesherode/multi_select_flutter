@@ -259,6 +259,9 @@ class _MultiSelectBottomSheetState<T> extends State<MultiSelectBottomSheet<T>> {
                                   List<MultiSelectItem<T>> filteredList = [];
                                   filteredList = widget.updateSearchQuery(
                                       val, widget.items);
+                                  for (var item in filteredList) {
+                                    item.selected = _selectedValues.contains(item.value);
+                                  }
                                   setState(() {
                                     if (widget.separateSelectedItems) {
                                       _items =
@@ -285,12 +288,19 @@ class _MultiSelectBottomSheetState<T> extends State<MultiSelectBottomSheet<T>> {
                               setState(() {
                                 _showSearch = !_showSearch;
                                 if (!_showSearch) {
-                                  if (widget.separateSelectedItems) {
-                                    _items =
-                                        widget.separateSelected(widget.items);
-                                  } else {
-                                    _items = widget.items;
+                                  // restore original items
+                                  List<MultiSelectItem<T>> restoredItems = widget.items;
+                                  // 🔥 FIX: sync selection state correctly
+                                  for (var item in restoredItems) {
+                                    item.selected = _selectedValues.contains(item.value);
                                   }
+                                  setState(() {
+                                    if (widget.separateSelectedItems) {
+                                      _items = widget.separateSelected(restoredItems);
+                                    } else {
+                                      _items = restoredItems;
+                                    }
+                                  });
                                 }
                               });
                             },
